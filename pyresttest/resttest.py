@@ -104,6 +104,7 @@ class TestConfig:
     """ Configuration for a test run """
     timeout = DEFAULT_TIMEOUT  # timeout of tests, in seconds
     print_bodies = False  # Print response bodies in all cases
+    print_bodies_pretty = False  # Print response bodies in all cases pretty
     print_headers = False  # Print response bodies in all cases
     retries = 0  # Retries on failures
     test_parallel = False  # Allow parallel execution of tests in a test set, for speed?
@@ -281,6 +282,8 @@ def parse_configuration(node, base_config=None):
             test_config.timeout = int(value)
         elif key == u'print_bodies':
             test_config.print_bodies = safe_to_bool(value)
+        elif key == u'print_bodies_pretty':
+            test_config.print_bodies_pretty = safe_to_bool(value)
         elif key == u'retries':
             test_config.retries = int(value)
         elif key == u'variable_binds':
@@ -425,10 +428,18 @@ def run_test(mytest, test_config=TestConfig(), context=None, curl_handle=None, *
 
     # Print response body if override is set to print all *OR* if test failed
     # (to capture maybe a stack trace)
-    if test_config.print_bodies or not result.passed:
+    if test_config.print_bodies or not result.passed or test_config.print_bodies_pretty:
         if test_config.interactive:
             print("RESPONSE:")
-        print(result.body.decode(ESCAPE_DECODING))
+        body = result.body
+        if test_config.print_bodies_pretty:
+            body_to_print_json = json.loads(body.decode())
+            # body_to_print_json = json.loads(body.decode(ESCAPE_DECODING))
+            body_to_print = json.dumps(body_to_print_json, indent=4, sort_keys=True)
+        else:
+            body_to_print_json = json.loads(body.decode(ESCAPE_DECODING))
+            body_to_print = json.dumps(body_to_print_json)
+        print(body_to_print)
 
     if test_config.print_headers or not result.passed:
         if test_config.interactive:
@@ -791,14 +802,15 @@ def main(args):
     Execute a test against the given base url.
 
     Keys allowed for args:
-        url           - REQUIRED - Base URL
-        test          - REQUIRED - Test file (yaml)
-        print_bodies  - OPTIONAL - print response body
-        print_headers  - OPTIONAL - print response headers
-        log           - OPTIONAL - set logging level {debug,info,warning,error,critical} (default=warning)
-        interactive   - OPTIONAL - mode that prints info before and after test exectuion and pauses for user input for each test
-        absolute_urls - OPTIONAL - mode that treats URLs in tests as absolute/full URLs instead of relative URLs
-        skip_term_colors - OPTIONAL - mode that turn off the output term colors
+        url                 - REQUIRED - Base URL
+        test                - REQUIRED - Test file (yaml)
+        print_bodies        - OPTIONAL - print response body
+        print_bodies_pretty - OPTIONAL - print response body pretty
+        print_headers       - OPTIONAL - print response headers
+        log                 - OPTIONAL - set logging level {debug,info,warning,error,critical} (default=warning)
+        interactive         - OPTIONAL - mode that prints info before and after test exectuion and pauses for user input for each test
+        absolute_urls       - OPTIONAL - mode that treats URLs in tests as absolute/full URLs instead of relative URLs
+        skip_term_colors    - OPTIONAL - mode that turn off the output term colors
     """
 
     if 'log' in args and args['log'] is not None:
@@ -837,6 +849,9 @@ def main(args):
         if 'print_bodies' in args and args['print_bodies'] is not None and bool(args['print_bodies']):
             t.config.print_bodies = safe_to_bool(args['print_bodies'])
 
+        if 'print_bodies_pretty' in args and args['print_bodies_pretty'] is not None and bool(args['print_bodies_pretty']):
+            t.config.print_bodies_pretty = safe_to_bool(args['print_bodies_pretty'])
+
         if 'print_headers' in args and args['print_headers'] is not None and bool(args['print_headers']):
             t.config.print_headers = safe_to_bool(args['print_headers'])
 
@@ -864,6 +879,8 @@ def parse_command_line_args(args_in):
         usage="usage: %prog base_url test_filename.yaml [options] ")
     parser.add_option(u"--print-bodies", help="Print all response bodies",
                       action="store", type="string", dest="print_bodies")
+    parser.add_option(u"--print-bodies-pretty", help="Print all response bodies pretty",
+                      action="store", type="string", dest="print_bodies_pretty")
     parser.add_option(u"--print-headers", help="Print all response headers",
                       action="store", type="string", dest="print_headers")
     parser.add_option(u"--log", help="Logging level",

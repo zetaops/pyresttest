@@ -60,7 +60,7 @@ COMPARATORS = {
     'gt': operator.gt,
     'greater_than': operator.gt,
     'contains': lambda x, y: x and operator.contains(x, y),  # is y in x
-    'not-contains': lambda x, y: x and not operator.contains(x, y),  # is y not in x
+    'not_contains': lambda x, y: x and not operator.contains(x, y),  # is y not in x
     'contained_by': lambda x, y: y and operator.contains(y, x),  # is x in y
     'regex': lambda x, y: regex_compare(str(x), str(y)),
     'type': lambda x, y: test_type(x, y)

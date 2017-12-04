@@ -37,7 +37,7 @@ class ValidatorsTest(unittest.TestCase):
 
     def test_not_contains_operator(self):
         """ Tests the not-contains """
-        n_cont_func = validators.COMPARATORS['not-contains']
+        n_cont_func = validators.COMPARATORS['not_contains']
 
         self.assertTrue(n_cont_func('abaooberab23', 'goob'))
         myarray = ['notinit']
