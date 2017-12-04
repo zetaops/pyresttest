@@ -6,6 +6,7 @@ from .validators import register_extractor
 from . import binding
 from .binding import Context
 
+
 class ValidatorsTest(unittest.TestCase):
     """ Testing for validators and extract functions """
 
@@ -33,6 +34,20 @@ class ValidatorsTest(unittest.TestCase):
         self.assertFalse(cont_by_func('test', None))
         self.assertFalse(cont_func(myarray, 'notinit'))
         self.assertFalse(cont_by_func('notinit', myarray))
+
+    def test_not_contains_operator(self):
+        """ Tests the not-contains """
+        n_cont_func = validators.COMPARATORS['not-contains']
+
+        self.assertTrue(n_cont_func('abaooberab23', 'goob'))
+        myarray = ['notinit']
+        self.assertTrue(n_cont_func(myarray, 1))
+        self.assertTrue(n_cont_func(myarray, None))
+        self.assertTrue(n_cont_func({'key': 'val'}, 'kiy'))
+
+        # Failure cases
+        self.assertFalse(n_cont_func('test', 'test'))
+        self.assertFalse(n_cont_func(myarray, 'notinit'))
 
     def test_type_comparator(self):
         """ Complex verification of the type test method, heh """
