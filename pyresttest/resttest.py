@@ -432,14 +432,21 @@ def run_test(mytest, test_config=TestConfig(), context=None, curl_handle=None, *
         if test_config.interactive:
             print("RESPONSE:")
         body = result.body
-        if test_config.print_bodies_pretty:
-            body_to_print_json = json.loads(body.decode())
-            # body_to_print_json = json.loads(body.decode(ESCAPE_DECODING))
-            body_to_print = json.dumps(body_to_print_json, indent=4, sort_keys=True)
-        else:
-            body_to_print_json = json.loads(body.decode(ESCAPE_DECODING))
-            body_to_print = json.dumps(body_to_print_json)
-        print(body_to_print)
+        print("-----------------------------------------------------------------------")
+        print("Name: {}".format(mytest.name))
+        try:
+            if test_config.print_bodies_pretty:
+                body_to_print_json = json.loads(body.decode())
+                # body_to_print_json = json.loads(body.decode(ESCAPE_DECODING))
+                body_to_print = json.dumps(body_to_print_json, indent=4, sort_keys=True)
+            else:
+                body_to_print_json = json.loads(body.decode(ESCAPE_DECODING))
+                body_to_print = json.dumps(body_to_print_json)
+            print(body_to_print)
+        except ValueError as e:
+            print("The response cannot be decoded. It may not be a valid json!")
+            print("Response body: {}".format(body))
+            print("Exception message: {}".format(e))
 
     if test_config.print_headers or not result.passed:
         if test_config.interactive:
